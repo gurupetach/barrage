@@ -105,7 +105,7 @@ defmodule Barrage.Scanner do
     with {:ok, base_words} <- Wordlist.load(config.wordlist) do
       # Perform initial reconnaissance to detect technology (for display purposes)
       case perform_initial_detection(config.url) do
-        {:ok, technologies} ->
+        {:ok, {technologies, server_info}} ->
           unless config.quiet do
             detected_tech =
               technologies
@@ -113,6 +113,7 @@ defmodule Barrage.Scanner do
               |> Enum.join(", ")
 
             IO.puts("Detected technologies: #{detected_tech}")
+            print_server_info(server_info)
           end
 
         {:error, _} ->
@@ -134,12 +135,39 @@ defmodule Barrage.Scanner do
   defp perform_initial_detection(url) do
     case HttpClient.get(url, %{user_agent: "Barrage/0.1.0", timeout: 10000}) do
       {:ok, response} ->
-        technologies = TechnologyDetector.detect_technology(response)
-        {:ok, technologies}
+        result = TechnologyDetector.detect_technology(response)
+        {:ok, result}
 
       {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  defp print_server_info(server_info) do
+    IO.puts("Server Information:")
+    IO.puts("  IP Address: #{server_info.ip_address}")
+    IO.puts("  Server: #{server_info.server}")
+    IO.puts("  Powered By: #{server_info.powered_by}")
+    IO.puts("  Hosting Provider: #{server_info.hosting_provider}")
+    IO.puts("  OS Info: #{server_info.os_info}")
+    IO.puts("  Cloud Platform: #{server_info.cloud_platform}")
+
+    unless Enum.empty?(server_info.database_hints) do
+      IO.puts("  Database Hints: #{Enum.join(server_info.database_hints, ", ")}")
+    end
+
+    security_headers = server_info.security_headers
+
+    missing_security_headers =
+      security_headers
+      |> Enum.filter(fn {_key, value} -> not value end)
+      |> Enum.map(fn {key, _} -> key end)
+
+    unless Enum.empty?(missing_security_headers) do
+      IO.puts("  Missing Security Headers: #{Enum.join(missing_security_headers, ", ")}")
+    end
+
+    IO.puts("")
   end
 
   defp load_all_technology_wordlists() do
@@ -150,7 +178,14 @@ defmodule Barrage.Scanner do
       :php_laravel,
       :wordpress,
       :django_python,
-      :nodejs_express
+      :nodejs_express,
+      :java_spring,
+      :ruby_rails,
+      :dotnet_core,
+      :cms_drupal,
+      :cms_joomla,
+      :go_frameworks,
+      :ecommerce_platforms
     ]
 
     all_technologies

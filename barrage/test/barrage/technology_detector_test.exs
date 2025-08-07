@@ -9,7 +9,7 @@ defmodule Barrage.TechnologyDetectorTest do
         url: "https://example.com"
       }
 
-      technologies = Barrage.TechnologyDetector.detect_technology(response)
+      {technologies, _server_info} = Barrage.TechnologyDetector.detect_technology(response)
 
       assert :elixir_phoenix in technologies
     end
@@ -22,7 +22,7 @@ defmodule Barrage.TechnologyDetectorTest do
         url: "https://example.com"
       }
 
-      technologies = Barrage.TechnologyDetector.detect_technology(response)
+      {technologies, _server_info} = Barrage.TechnologyDetector.detect_technology(response)
 
       assert :wordpress in technologies
     end
@@ -34,7 +34,7 @@ defmodule Barrage.TechnologyDetectorTest do
         url: "https://example.com"
       }
 
-      technologies = Barrage.TechnologyDetector.detect_technology(response)
+      {technologies, _server_info} = Barrage.TechnologyDetector.detect_technology(response)
 
       assert :django_python in technologies
     end
@@ -46,7 +46,7 @@ defmodule Barrage.TechnologyDetectorTest do
         url: "https://example.com"
       }
 
-      technologies = Barrage.TechnologyDetector.detect_technology(response)
+      {technologies, _server_info} = Barrage.TechnologyDetector.detect_technology(response)
 
       assert :react_next in technologies
     end
@@ -58,7 +58,7 @@ defmodule Barrage.TechnologyDetectorTest do
         url: "https://example.com/api/"
       }
 
-      technologies = Barrage.TechnologyDetector.detect_technology(response)
+      {technologies, _server_info} = Barrage.TechnologyDetector.detect_technology(response)
 
       assert :php_laravel in technologies
       assert :nodejs_express in technologies or :elixir_phoenix in technologies
@@ -71,7 +71,7 @@ defmodule Barrage.TechnologyDetectorTest do
         url: "https://example.com"
       }
 
-      technologies = Barrage.TechnologyDetector.detect_technology(response)
+      {technologies, _server_info} = Barrage.TechnologyDetector.detect_technology(response)
 
       assert technologies == [:unknown]
     end

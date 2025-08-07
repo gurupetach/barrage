@@ -11,19 +11,38 @@ defmodule Barrage.TechnologyDetector do
           | :wordpress
           | :django_python
           | :nodejs_express
+          | :java_spring
+          | :ruby_rails
+          | :dotnet_core
+          | :cms_drupal
+          | :cms_joomla
+          | :go_frameworks
+          | :ecommerce_platforms
           | :unknown
 
-  @spec detect_technology(map()) :: list(technology())
+  @spec detect_technology(map()) :: {list(technology()), map()}
   def detect_technology(response) do
-    []
-    |> detect_from_headers(response.headers)
-    |> detect_from_content(response.body)
-    |> detect_from_url(response.url)
-    |> Enum.uniq()
-    |> case do
-      [] -> [:unknown]
-      technologies -> technologies
-    end
+    server_info = extract_server_info(response)
+
+    technologies =
+      []
+      |> detect_from_headers(response.headers)
+      |> detect_from_content(response.body)
+      |> detect_from_url(response.url)
+      |> Enum.uniq()
+      |> case do
+        [] -> [:unknown]
+        techs -> techs
+      end
+
+    {technologies, server_info}
+  end
+
+  # Legacy function for backward compatibility
+  @spec detect_technology_legacy(map()) :: list(technology())
+  def detect_technology_legacy(response) do
+    {technologies, _server_info} = detect_technology(response)
+    technologies
   end
 
   defp detect_from_headers(acc, headers) do
@@ -72,6 +91,27 @@ defmodule Barrage.TechnologyDetector do
           String.contains?(server, "uvicorn") ->
             [:django_python | acc]
 
+          String.contains?(server, "tomcat") ->
+            [:java_spring | acc]
+
+          String.contains?(server, "jetty") ->
+            [:java_spring | acc]
+
+          String.contains?(server, "puma") ->
+            [:ruby_rails | acc]
+
+          String.contains?(server, "passenger") ->
+            [:ruby_rails | acc]
+
+          String.contains?(server, "unicorn") ->
+            [:ruby_rails | acc]
+
+          String.contains?(server, "kestrel") ->
+            [:dotnet_core | acc]
+
+          String.contains?(server, "iis") ->
+            [:dotnet_core | acc]
+
           true ->
             acc
         end
@@ -88,6 +128,13 @@ defmodule Barrage.TechnologyDetector do
             String.contains?(powered_by, "express") -> [:nodejs_express]
             String.contains?(powered_by, "next") -> [:react_next]
             String.contains?(powered_by, "nuxt") -> [:vue_nuxt]
+            String.contains?(powered_by, "spring") -> [:java_spring]
+            String.contains?(powered_by, "rails") -> [:ruby_rails]
+            String.contains?(powered_by, "asp.net") -> [:dotnet_core]
+            String.contains?(powered_by, "drupal") -> [:cms_drupal]
+            String.contains?(powered_by, "joomla") -> [:cms_joomla]
+            String.contains?(powered_by, "shopify") -> [:ecommerce_platforms]
+            String.contains?(powered_by, "magento") -> [:ecommerce_platforms]
             true -> []
           end
 
@@ -103,6 +150,10 @@ defmodule Barrage.TechnologyDetector do
             String.contains?(generator, "django") -> [:django_python]
             String.contains?(generator, "next") -> [:react_next]
             String.contains?(generator, "nuxt") -> [:vue_nuxt]
+            String.contains?(generator, "drupal") -> [:cms_drupal]
+            String.contains?(generator, "joomla") -> [:cms_joomla]
+            String.contains?(generator, "magento") -> [:ecommerce_platforms]
+            String.contains?(generator, "shopify") -> [:ecommerce_platforms]
             true -> []
           end
 
@@ -120,6 +171,16 @@ defmodule Barrage.TechnologyDetector do
     |> maybe_add_tech(Map.has_key?(headers, "x-nuxt-no-ssr"), [:vue_nuxt])
     |> maybe_add_tech(Map.has_key?(headers, "x-phoenix-endpoint"), [:elixir_phoenix])
     |> maybe_add_tech(Map.has_key?(headers, "x-request-id"), [:elixir_phoenix])
+    |> maybe_add_tech(Map.has_key?(headers, "x-drupal-cache"), [:cms_drupal])
+    |> maybe_add_tech(
+      Map.has_key?(headers, "x-generator") and
+        String.contains?(Map.get(headers, "x-generator", ""), "drupal"),
+      [:cms_drupal]
+    )
+    |> maybe_add_tech(Map.has_key?(headers, "x-joomla-version"), [:cms_joomla])
+    |> maybe_add_tech(Map.has_key?(headers, "x-shopify-stage"), [:ecommerce_platforms])
+    |> maybe_add_tech(Map.has_key?(headers, "x-shopify-shop-id"), [:ecommerce_platforms])
+    |> maybe_add_tech(Map.has_key?(headers, "x-magento-cache-debug"), [:ecommerce_platforms])
   end
 
   defp detect_from_content(acc, body) when is_binary(body) do
@@ -142,6 +203,28 @@ defmodule Barrage.TechnologyDetector do
     |> maybe_add_tech(String.contains?(body_lower, "laravel_session"), [:php_laravel])
     |> maybe_add_tech(String.contains?(body_lower, "csrf-token"), [:php_laravel])
     |> maybe_add_tech(String.contains?(body_lower, "express"), [:nodejs_express])
+    |> maybe_add_tech(String.contains?(body_lower, "spring"), [:java_spring])
+    |> maybe_add_tech(String.contains?(body_lower, "thymeleaf"), [:java_spring])
+    |> maybe_add_tech(String.contains?(body_lower, "rails"), [:ruby_rails])
+    |> maybe_add_tech(String.contains?(body_lower, "ruby on rails"), [:ruby_rails])
+    |> maybe_add_tech(String.contains?(body_lower, "asp.net"), [:dotnet_core])
+    |> maybe_add_tech(String.contains?(body_lower, "blazor"), [:dotnet_core])
+    |> maybe_add_tech(String.contains?(body_lower, "drupal"), [:cms_drupal])
+    |> maybe_add_tech(String.contains?(body_lower, "drupal.org"), [:cms_drupal])
+    |> maybe_add_tech(String.contains?(body_lower, "joomla"), [:cms_joomla])
+    |> maybe_add_tech(String.contains?(body_lower, "joomla.org"), [:cms_joomla])
+    |> maybe_add_tech(String.contains?(body_lower, "gin-gonic"), [:go_frameworks])
+    |> maybe_add_tech(String.contains?(body_lower, "echo"), [:go_frameworks])
+    |> maybe_add_tech(String.contains?(body_lower, "fiber"), [:go_frameworks])
+    |> maybe_add_tech(String.contains?(body_lower, "shopify"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(body_lower, "magento"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(body_lower, "woocommerce"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(body_lower, "prestashop"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(body_lower, "opencart"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(body_lower, "bigcommerce"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(body_lower, "salesforce commerce"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(body_lower, "sap commerce"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(body_lower, "adobe commerce"), [:ecommerce_platforms])
   end
 
   defp detect_from_content(acc, _), do: acc
@@ -157,14 +240,134 @@ defmodule Barrage.TechnologyDetector do
     |> maybe_add_tech(String.contains?(url_lower, "/graphql"), [:elixir_phoenix, :nodejs_express])
     |> maybe_add_tech(String.contains?(url_lower, "_next/"), [:react_next])
     |> maybe_add_tech(String.contains?(url_lower, "_nuxt/"), [:vue_nuxt])
+    |> maybe_add_tech(String.contains?(url_lower, "/sites/default"), [:cms_drupal])
+    |> maybe_add_tech(String.contains?(url_lower, "/administrator"), [:cms_joomla])
+    |> maybe_add_tech(String.contains?(url_lower, "/shop"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(url_lower, "/cart"), [:ecommerce_platforms])
+    |> maybe_add_tech(String.contains?(url_lower, "/checkout"), [:ecommerce_platforms])
   end
 
   defp detect_from_url(acc, _), do: acc
 
+  defp extract_server_info(response) do
+    headers_map =
+      response.headers
+      |> Enum.map(fn {key, value} -> {String.downcase(key), String.downcase(value)} end)
+      |> Map.new()
+
+    %{
+      server: Map.get(headers_map, "server", "unknown"),
+      powered_by: Map.get(headers_map, "x-powered-by", "unknown"),
+      ip_address: resolve_ip(response.url),
+      hosting_provider: detect_hosting_provider(headers_map),
+      os_info: detect_os_from_headers(headers_map),
+      cloud_platform: detect_cloud_platform(headers_map),
+      database_hints: detect_database_hints(response.body, headers_map),
+      security_headers: analyze_security_headers(headers_map)
+    }
+  end
+
+  defp resolve_ip(url) do
+    case URI.parse(url) do
+      %{host: host} when is_binary(host) ->
+        case :inet.gethostbyname(String.to_charlist(host)) do
+          {:ok, {:hostent, _name, _aliases, :inet, _length, [ip | _]}} ->
+            ip |> Tuple.to_list() |> Enum.join(".")
+
+          _ ->
+            "unknown"
+        end
+
+      _ ->
+        "unknown"
+    end
+  end
+
+  defp detect_hosting_provider(headers) do
+    cond do
+      Map.has_key?(headers, "x-amz-cf-pop") -> "AWS CloudFront"
+      Map.has_key?(headers, "x-amz-cf-id") -> "AWS CloudFront"
+      Map.has_key?(headers, "x-azure-ref") -> "Microsoft Azure"
+      Map.has_key?(headers, "x-goog-meta-") -> "Google Cloud"
+      Map.has_key?(headers, "x-served-by") -> "Fastly/Varnish"
+      Map.has_key?(headers, "x-cache") -> "CDN/Cache"
+      Map.has_key?(headers, "cf-ray") -> "Cloudflare"
+      Map.has_key?(headers, "x-github-request-id") -> "GitHub Pages"
+      Map.has_key?(headers, "x-vercel-cache") -> "Vercel"
+      Map.has_key?(headers, "x-netlify-id") -> "Netlify"
+      true -> "unknown"
+    end
+  end
+
+  defp detect_os_from_headers(headers) do
+    server = Map.get(headers, "server", "")
+
+    cond do
+      String.contains?(server, "ubuntu") -> "Ubuntu Linux"
+      String.contains?(server, "centos") -> "CentOS Linux"
+      String.contains?(server, "debian") -> "Debian Linux"
+      String.contains?(server, "redhat") -> "Red Hat Linux"
+      String.contains?(server, "windows") -> "Windows Server"
+      String.contains?(server, "unix") -> "Unix"
+      String.contains?(server, "linux") -> "Linux"
+      true -> "unknown"
+    end
+  end
+
+  defp detect_cloud_platform(headers) do
+    cond do
+      Map.has_key?(headers, "x-amz-cf-pop") or Map.has_key?(headers, "x-amz-cf-id") -> "AWS"
+      Map.has_key?(headers, "x-azure-ref") -> "Microsoft Azure"
+      Map.has_key?(headers, "x-goog-meta-") -> "Google Cloud Platform"
+      Map.has_key?(headers, "x-vercel-cache") -> "Vercel"
+      Map.has_key?(headers, "x-netlify-id") -> "Netlify"
+      Map.has_key?(headers, "cf-ray") -> "Cloudflare"
+      true -> "unknown"
+    end
+  end
+
+  defp detect_database_hints(body, headers) when is_binary(body) do
+    body_lower = String.downcase(body)
+
+    hints = []
+
+    hints = if String.contains?(body_lower, "mysql"), do: ["MySQL" | hints], else: hints
+    hints = if String.contains?(body_lower, "postgresql"), do: ["PostgreSQL" | hints], else: hints
+    hints = if String.contains?(body_lower, "mongodb"), do: ["MongoDB" | hints], else: hints
+    hints = if String.contains?(body_lower, "redis"), do: ["Redis" | hints], else: hints
+    hints = if String.contains?(body_lower, "sqlite"), do: ["SQLite" | hints], else: hints
+    hints = if String.contains?(body_lower, "oracle"), do: ["Oracle" | hints], else: hints
+    hints = if String.contains?(body_lower, "mssql"), do: ["SQL Server" | hints], else: hints
+
+    # Check headers for database-specific information
+    hints = if Map.has_key?(headers, "x-mysql-version"), do: ["MySQL" | hints], else: hints
+
+    hints =
+      if Map.has_key?(headers, "x-postgres-version"), do: ["PostgreSQL" | hints], else: hints
+
+    Enum.uniq(hints)
+  end
+
+  defp detect_database_hints(_, _), do: []
+
+  defp analyze_security_headers(headers) do
+    %{
+      hsts: Map.has_key?(headers, "strict-transport-security"),
+      csp: Map.has_key?(headers, "content-security-policy"),
+      xframe: Map.has_key?(headers, "x-frame-options"),
+      xcontent: Map.has_key?(headers, "x-content-type-options"),
+      referrer_policy: Map.has_key?(headers, "referrer-policy"),
+      permissions_policy: Map.has_key?(headers, "permissions-policy")
+    }
+  end
+
   defp maybe_add_tech(acc, true, new_techs) when is_list(new_techs), do: new_techs ++ acc
   defp maybe_add_tech(acc, true, new_tech), do: [new_tech | acc]
   defp maybe_add_tech(acc, false, _), do: acc
-  defp maybe_add_tech(acc, _, func) when is_function(func), do: func.() ++ acc
+
+  defp maybe_add_tech(acc, condition, func) when is_function(func) do
+    if condition, do: func.() ++ acc, else: acc
+  end
 
   @spec get_wordlist_for_technology(technology()) :: String.t()
   def get_wordlist_for_technology(technology) do
@@ -176,6 +379,13 @@ defmodule Barrage.TechnologyDetector do
       :wordpress -> "wordlists/wordpress.txt"
       :django_python -> "wordlists/django-python.txt"
       :nodejs_express -> "wordlists/nodejs-express.txt"
+      :java_spring -> "wordlists/java-spring.txt"
+      :ruby_rails -> "wordlists/ruby-rails.txt"
+      :dotnet_core -> "wordlists/dotnet-core.txt"
+      :cms_drupal -> "wordlists/cms-drupal.txt"
+      :cms_joomla -> "wordlists/cms-joomla.txt"
+      :go_frameworks -> "wordlists/go-frameworks.txt"
+      :ecommerce_platforms -> "wordlists/ecommerce-platforms.txt"
       :unknown -> "wordlists/common.txt"
     end
   end
@@ -190,6 +400,13 @@ defmodule Barrage.TechnologyDetector do
       :wordpress -> [".php", ".html", ".htm", ".xml", ".txt"]
       :django_python -> [".py", ".html", ".json", ".xml", ".txt"]
       :nodejs_express -> [".js", ".ts", ".json", ".html", ".ejs", ".pug"]
+      :java_spring -> [".java", ".jsp", ".xml", ".properties", ".war", ".jar"]
+      :ruby_rails -> [".rb", ".erb", ".yml", ".yaml", ".html", ".css"]
+      :dotnet_core -> [".cs", ".cshtml", ".razor", ".dll", ".config", ".json"]
+      :cms_drupal -> [".php", ".module", ".install", ".inc", ".yml", ".twig"]
+      :cms_joomla -> [".php", ".xml", ".ini", ".sql", ".html", ".css"]
+      :go_frameworks -> [".go", ".mod", ".sum", ".yaml", ".yml", ".json"]
+      :ecommerce_platforms -> [".php", ".js", ".liquid", ".twig", ".phtml", ".xml"]
       :unknown -> []
     end
   end
@@ -204,6 +421,13 @@ defmodule Barrage.TechnologyDetector do
       :wordpress -> "WordPress"
       :django_python -> "Django/Python"
       :nodejs_express -> "Node.js/Express"
+      :java_spring -> "Java/Spring"
+      :ruby_rails -> "Ruby/Rails"
+      :dotnet_core -> ".NET Core"
+      :cms_drupal -> "Drupal CMS"
+      :cms_joomla -> "Joomla CMS"
+      :go_frameworks -> "Go Framework"
+      :ecommerce_platforms -> "E-commerce Platform"
       :unknown -> "Unknown"
     end
   end

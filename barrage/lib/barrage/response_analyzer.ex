@@ -19,7 +19,7 @@ defmodule Barrage.ResponseAnalyzer do
   @spec analyze(map(), map()) :: analysis_result()
   def analyze(response, config) do
     technologies =
-      if config[:intelligent], do: TechnologyDetector.detect_technology(response), else: []
+      if config[:intelligent], do: TechnologyDetector.detect_technology_legacy(response), else: []
 
     file_type = detect_file_type(response)
     security_findings = detect_security_findings(response)
