@@ -93,7 +93,7 @@ defmodule Barrage.CLI do
         ],
         intelligent: [
           long: "--intelligent",
-          help: "Enable intelligent scanning with technology detection",
+          help: "Enable intelligent analysis with technology detection and security findings",
           parser: :string,
           default: "true"
         ],

@@ -57,13 +57,13 @@ defmodule Barrage.Scanner do
   defp print_scan_info(config, total_requests) do
     unless config.quiet do
       IO.puts("Target:     #{config.url}")
-      IO.puts("Wordlist:   #{config.wordlist}")
+      IO.puts("Wordlists:  #{config.wordlist} + all technology wordlists")
       IO.puts("Threads:    #{config.threads}")
       IO.puts("Extensions: #{Enum.join(config.extensions, ", ")}")
       IO.puts("Requests:   #{total_requests}")
       IO.puts("Status codes: #{config.status_codes |> MapSet.to_list() |> Enum.join(", ")}")
       IO.puts("")
-      IO.puts("Starting scan...")
+      IO.puts("Starting comprehensive scan...")
       IO.puts("")
     end
   end
@@ -103,7 +103,7 @@ defmodule Barrage.Scanner do
   defp load_words_with_detection(config) do
     # First load the basic wordlist
     with {:ok, base_words} <- Wordlist.load(config.wordlist) do
-      # Perform initial reconnaissance to detect technology
+      # Perform initial reconnaissance to detect technology (for display purposes)
       case perform_initial_detection(config.url) do
         {:ok, technologies} ->
           unless config.quiet do
@@ -115,18 +115,19 @@ defmodule Barrage.Scanner do
             IO.puts("Detected technologies: #{detected_tech}")
           end
 
-          # Load additional words based on detected technologies
-          additional_words = load_technology_specific_words(technologies)
-
-          # Merge base words with technology-specific words
-          all_words = (base_words ++ additional_words) |> Enum.uniq()
-
-          {:ok, all_words}
-
         {:error, _} ->
-          # Fall back to base wordlist if detection fails
-          {:ok, base_words}
+          unless config.quiet do
+            IO.puts("Technology detection failed, using all wordlists")
+          end
       end
+
+      # Always load ALL technology-specific wordlists for comprehensive coverage
+      all_technology_words = load_all_technology_wordlists()
+
+      # Merge base words with all technology-specific words
+      all_words = (base_words ++ all_technology_words) |> Enum.uniq()
+
+      {:ok, all_words}
     end
   end
 
@@ -141,8 +142,18 @@ defmodule Barrage.Scanner do
     end
   end
 
-  defp load_technology_specific_words(technologies) do
-    technologies
+  defp load_all_technology_wordlists() do
+    all_technologies = [
+      :elixir_phoenix,
+      :vue_nuxt,
+      :react_next,
+      :php_laravel,
+      :wordpress,
+      :django_python,
+      :nodejs_express
+    ]
+
+    all_technologies
     |> Enum.flat_map(fn tech ->
       wordlist_path = TechnologyDetector.get_wordlist_for_technology(tech)
 

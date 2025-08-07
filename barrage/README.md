@@ -6,7 +6,7 @@ An intelligent, high-performance directory and file enumeration tool written in 
 
 ### 🧠 **Intelligent Scanning**
 - **Automatic Technology Detection**: Identifies frameworks (Phoenix, Laravel, WordPress, Django, React, Vue, Node.js)
-- **Smart Wordlist Selection**: Dynamically loads technology-specific wordlists based on detection
+- **Comprehensive Wordlist Coverage**: Always uses ALL technology-specific wordlists for maximum coverage
 - **Security Vulnerability Detection**: Finds exposed configs, backups, errors, and sensitive files
 - **File Type Recognition**: Automatically categorizes discovered content
 
@@ -63,20 +63,20 @@ mix escript.build
 ### 🧠 **Intelligent Scanning Examples**
 
 ```bash
-# Auto-detect and scan WordPress site
+# Comprehensive scan with technology detection
 ./barrage https://wordpress-site.com
 # Output: Detected technologies: WordPress
-# Uses wordpress.txt wordlist automatically + common.txt
+# Uses: common.txt + ALL technology wordlists for comprehensive coverage
 
-# Auto-detect and scan Laravel application  
-./barrage https://laravel-app.com
-# Output: Detected technologies: PHP/Laravel  
-# Uses php-laravel.txt wordlist + common.txt
+# Comprehensive scan with multiple technologies detected
+./barrage https://complex-app.com
+# Output: Detected technologies: PHP/Laravel, React
+# Uses: common.txt + ALL technology wordlists for maximum coverage
 
-# Auto-detect Phoenix/Elixir application
+# Technology detection helps with output analysis
 ./barrage https://phoenix-app.com  
 # Output: Detected technologies: Elixir/Phoenix
-# Uses elixir-phoenix.txt wordlist + common.txt
+# Uses: common.txt + ALL technology wordlists, highlights Phoenix-specific findings
 
 # Disable intelligent mode for faster basic scan
 ./barrage --intelligent false https://example.com
@@ -136,13 +136,13 @@ by Peter Achieng
 
 Detected technologies: WordPress, PHP/Laravel
 Target:     https://example.com/
-Wordlist:   wordlists/common.txt + wordpress.txt + php-laravel.txt  
+Wordlists:  wordlists/common.txt + all technology wordlists
 Threads:    10
 Extensions: 
-Requests:   156
+Requests:   324
 Status codes: 200, 301, 302, 403
 
-Starting scan...
+Starting comprehensive scan...
 
 200      1.2KB    https://example.com/wp-admin/       [PHP] [WordPress] ⚠ Missing Headers
 301       312B    https://example.com/wp-content/     [WordPress] 
@@ -154,12 +154,12 @@ Starting scan...
 ===============================================================
 SCAN COMPLETE
 ===============================================================
-Total requests: 156
+Total requests: 324
 Status 200: 4 responses
 Status 301: 1 responses  
 Status 403: 1 responses
 Status 500: 1 responses
-Status 404: 149 responses
+Status 404: 317 responses
 ===============================================================
 ```
 
@@ -203,9 +203,9 @@ dashboard
 
 ### **Performance Optimization**
 - **Start conservatively** (10-20 threads) and scale based on target response
-- **Use intelligent scanning** to focus on relevant paths for detected technologies
-- **Monitor target health** to avoid overwhelming servers
-- **Combine strategic extensions** based on technology detection
+- **Comprehensive coverage** - All technology wordlists are used for maximum discovery
+- **Monitor target health** to avoid overwhelming servers with 400+ requests
+- **Combine strategic extensions** based on technology detection results
 
 ### **Security Best Practices**  
 - **Respect robots.txt** and rate limits during authorized testing
