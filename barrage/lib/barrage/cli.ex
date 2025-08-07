@@ -90,6 +90,26 @@ defmodule Barrage.CLI do
           help: "User-Agent string",
           parser: :string,
           default: "Barrage/0.1.0"
+        ],
+        intelligent: [
+          long: "--intelligent",
+          help: "Enable intelligent scanning with technology detection",
+          parser: :string,
+          default: "true"
+        ],
+        recursive: [
+          short: "-r",
+          long: "--recursive",
+          help: "Enable recursive directory scanning",
+          parser: :string,
+          default: "false"
+        ],
+        max_depth: [
+          value_name: "DEPTH",
+          long: "--max-depth",
+          help: "Maximum recursion depth (default: 3)",
+          parser: :integer,
+          default: 3
         ]
       ]
     )
@@ -108,7 +128,10 @@ defmodule Barrage.CLI do
       timeout: options.timeout * 1000,
       user_agent: options.user_agent,
       verbose: flags.verbose,
-      quiet: flags.quiet
+      quiet: flags.quiet,
+      intelligent: options.intelligent == "true",
+      recursive: options.recursive == "true",
+      max_depth: options.max_depth
     }
 
     Scanner.run(config)

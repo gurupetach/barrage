@@ -3,10 +3,10 @@ defmodule Barrage.Scanner do
   Main scanner module that orchestrates the brute-forcing process.
   """
 
-  alias Barrage.{Wordlist, HttpClient, ResponseAnalyzer, OutputFormatter}
+  alias Barrage.{Wordlist, HttpClient, ResponseAnalyzer, OutputFormatter, TechnologyDetector}
 
   def run(config) do
-    with {:ok, words} <- Wordlist.load(config.wordlist),
+    with {:ok, words} <- load_words_with_detection(config),
          :ok <- validate_target(config.url) do
       paths = Wordlist.generate_paths(config.url, words, config.extensions)
       total_requests = length(paths)
@@ -98,5 +98,59 @@ defmodule Barrage.Scanner do
       %{status: :error} -> config.verbose
       _ -> false
     end
+  end
+
+  defp load_words_with_detection(config) do
+    # First load the basic wordlist
+    with {:ok, base_words} <- Wordlist.load(config.wordlist) do
+      # Perform initial reconnaissance to detect technology
+      case perform_initial_detection(config.url) do
+        {:ok, technologies} ->
+          unless config.quiet do
+            detected_tech =
+              technologies
+              |> Enum.map(&TechnologyDetector.technology_to_string/1)
+              |> Enum.join(", ")
+
+            IO.puts("Detected technologies: #{detected_tech}")
+          end
+
+          # Load additional words based on detected technologies
+          additional_words = load_technology_specific_words(technologies)
+
+          # Merge base words with technology-specific words
+          all_words = (base_words ++ additional_words) |> Enum.uniq()
+
+          {:ok, all_words}
+
+        {:error, _} ->
+          # Fall back to base wordlist if detection fails
+          {:ok, base_words}
+      end
+    end
+  end
+
+  defp perform_initial_detection(url) do
+    case HttpClient.get(url, %{user_agent: "Barrage/0.1.0", timeout: 10000}) do
+      {:ok, response} ->
+        technologies = TechnologyDetector.detect_technology(response)
+        {:ok, technologies}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp load_technology_specific_words(technologies) do
+    technologies
+    |> Enum.flat_map(fn tech ->
+      wordlist_path = TechnologyDetector.get_wordlist_for_technology(tech)
+
+      case Wordlist.load(wordlist_path) do
+        {:ok, words} -> words
+        {:error, _} -> []
+      end
+    end)
+    |> Enum.uniq()
   end
 end
