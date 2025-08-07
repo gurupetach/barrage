@@ -18,6 +18,13 @@ defmodule Barrage.TechnologyDetector do
           | :cms_joomla
           | :go_frameworks
           | :ecommerce_platforms
+          | :wix
+          | :flutter_web
+          | :squarespace
+          | :webflow
+          | :shopify_plus
+          | :react_native_web
+          | :ionic
           | :unknown
 
   @spec detect_technology(map()) :: {list(technology()), map()}
@@ -181,6 +188,10 @@ defmodule Barrage.TechnologyDetector do
     |> maybe_add_tech(Map.has_key?(headers, "x-shopify-stage"), [:ecommerce_platforms])
     |> maybe_add_tech(Map.has_key?(headers, "x-shopify-shop-id"), [:ecommerce_platforms])
     |> maybe_add_tech(Map.has_key?(headers, "x-magento-cache-debug"), [:ecommerce_platforms])
+    |> maybe_add_tech(Map.has_key?(headers, "x-wix-request-id"), [:wix])
+    |> maybe_add_tech(Map.has_key?(headers, "x-wix-published-version"), [:wix])
+    |> maybe_add_tech(Map.has_key?(headers, "x-squarespace-frontend"), [:squarespace])
+    |> maybe_add_tech(Map.has_key?(headers, "x-webflow-cache"), [:webflow])
   end
 
   defp detect_from_content(acc, body) when is_binary(body) do
@@ -225,6 +236,40 @@ defmodule Barrage.TechnologyDetector do
     |> maybe_add_tech(String.contains?(body_lower, "salesforce commerce"), [:ecommerce_platforms])
     |> maybe_add_tech(String.contains?(body_lower, "sap commerce"), [:ecommerce_platforms])
     |> maybe_add_tech(String.contains?(body_lower, "adobe commerce"), [:ecommerce_platforms])
+    |> maybe_add_tech(
+      String.contains?(body_lower, "wix.com") or
+        String.contains?(body_lower, "static.wixstatic.com"),
+      [:wix]
+    )
+    |> maybe_add_tech(
+      String.contains?(body_lower, "wix-code") or String.contains?(body_lower, "wix-corvid"),
+      [:wix]
+    )
+    |> maybe_add_tech(
+      String.contains?(body_lower, "flutter") and String.contains?(body_lower, "canvaskit"),
+      [:flutter_web]
+    )
+    |> maybe_add_tech(String.contains?(body_lower, "flutter-web"), [:flutter_web])
+    |> maybe_add_tech(String.contains?(body_lower, "flutter.js"), [:flutter_web])
+    |> maybe_add_tech(
+      String.contains?(body_lower, "squarespace.com") or
+        String.contains?(body_lower, "squarespace-cdn"),
+      [:squarespace]
+    )
+    |> maybe_add_tech(
+      String.contains?(body_lower, "webflow") or String.contains?(body_lower, "webflow.com"),
+      [:webflow]
+    )
+    |> maybe_add_tech(
+      String.contains?(body_lower, "shopify-plus") or String.contains?(body_lower, "shop.app"),
+      [:shopify_plus]
+    )
+    |> maybe_add_tech(String.contains?(body_lower, "react-native-web"), [:react_native_web])
+    |> maybe_add_tech(
+      String.contains?(body_lower, "ionic") and String.contains?(body_lower, "capacitor"),
+      [:ionic]
+    )
+    |> maybe_add_tech(String.contains?(body_lower, "@ionic/core"), [:ionic])
   end
 
   defp detect_from_content(acc, _), do: acc
@@ -245,6 +290,20 @@ defmodule Barrage.TechnologyDetector do
     |> maybe_add_tech(String.contains?(url_lower, "/shop"), [:ecommerce_platforms])
     |> maybe_add_tech(String.contains?(url_lower, "/cart"), [:ecommerce_platforms])
     |> maybe_add_tech(String.contains?(url_lower, "/checkout"), [:ecommerce_platforms])
+    |> maybe_add_tech(
+      String.contains?(url_lower, ".wixsite.com") or String.contains?(url_lower, "wix.com"),
+      [:wix]
+    )
+    |> maybe_add_tech(String.contains?(url_lower, ".squarespace.com"), [:squarespace])
+    |> maybe_add_tech(
+      String.contains?(url_lower, ".webflow.io") or String.contains?(url_lower, "webflow.com"),
+      [:webflow]
+    )
+    |> maybe_add_tech(
+      String.contains?(url_lower, ".myshopify.com") or
+        String.contains?(url_lower, "shopify-plus"),
+      [:shopify_plus]
+    )
   end
 
   defp detect_from_url(acc, _), do: acc
@@ -386,6 +445,13 @@ defmodule Barrage.TechnologyDetector do
       :cms_joomla -> "wordlists/cms-joomla.txt"
       :go_frameworks -> "wordlists/go-frameworks.txt"
       :ecommerce_platforms -> "wordlists/ecommerce-platforms.txt"
+      :wix -> "wordlists/common.txt"
+      :flutter_web -> "wordlists/common.txt"
+      :squarespace -> "wordlists/common.txt"
+      :webflow -> "wordlists/common.txt"
+      :shopify_plus -> "wordlists/ecommerce-platforms.txt"
+      :react_native_web -> "wordlists/react-next.txt"
+      :ionic -> "wordlists/common.txt"
       :unknown -> "wordlists/common.txt"
     end
   end
@@ -407,6 +473,13 @@ defmodule Barrage.TechnologyDetector do
       :cms_joomla -> [".php", ".xml", ".ini", ".sql", ".html", ".css"]
       :go_frameworks -> [".go", ".mod", ".sum", ".yaml", ".yml", ".json"]
       :ecommerce_platforms -> [".php", ".js", ".liquid", ".twig", ".phtml", ".xml"]
+      :wix -> [".html", ".js", ".css", ".json"]
+      :flutter_web -> [".dart", ".js", ".html", ".css", ".json"]
+      :squarespace -> [".html", ".js", ".css", ".json"]
+      :webflow -> [".html", ".js", ".css", ".json"]
+      :shopify_plus -> [".liquid", ".js", ".css", ".json", ".xml"]
+      :react_native_web -> [".js", ".jsx", ".ts", ".tsx", ".json"]
+      :ionic -> [".ts", ".js", ".html", ".scss", ".json"]
       :unknown -> []
     end
   end
@@ -428,6 +501,13 @@ defmodule Barrage.TechnologyDetector do
       :cms_joomla -> "Joomla CMS"
       :go_frameworks -> "Go Framework"
       :ecommerce_platforms -> "E-commerce Platform"
+      :wix -> "Wix"
+      :flutter_web -> "Flutter Web"
+      :squarespace -> "Squarespace"
+      :webflow -> "Webflow"
+      :shopify_plus -> "Shopify Plus"
+      :react_native_web -> "React Native Web"
+      :ionic -> "Ionic"
       :unknown -> "Unknown"
     end
   end

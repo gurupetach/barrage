@@ -185,7 +185,14 @@ defmodule Barrage.Scanner do
       :cms_drupal,
       :cms_joomla,
       :go_frameworks,
-      :ecommerce_platforms
+      :ecommerce_platforms,
+      :wix,
+      :flutter_web,
+      :squarespace,
+      :webflow,
+      :shopify_plus,
+      :react_native_web,
+      :ionic
     ]
 
     all_technologies
