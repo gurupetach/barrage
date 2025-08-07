@@ -4,12 +4,12 @@ defmodule Barrage.ResponseAnalyzer do
   """
 
   @type analysis_result :: %{
-    url: String.t(),
-    status_code: integer(),
-    content_length: integer(),
-    response_time: integer(),
-    interesting: boolean()
-  }
+          url: String.t(),
+          status_code: integer(),
+          content_length: integer(),
+          response_time: integer(),
+          interesting: boolean()
+        }
 
   @spec analyze(map(), map()) :: analysis_result()
   def analyze(response, _config) do
@@ -17,7 +17,8 @@ defmodule Barrage.ResponseAnalyzer do
       url: response.url,
       status_code: response.status_code,
       content_length: response.content_length,
-      response_time: 0,  # TODO: Add timing
+      # TODO: Add timing
+      response_time: 0,
       interesting: is_interesting?(response)
     }
   end
@@ -44,13 +45,13 @@ defmodule Barrage.ResponseAnalyzer do
   def filter_false_positives(results, _config) do
     # Group by status code and content length to identify patterns
     grouped = Enum.group_by(results, &{&1.status_code, &1.content_length})
-    
+
     # Filter out results that appear too frequently (likely false positives)
-    filtered_groups = 
+    filtered_groups =
       Enum.reject(grouped, fn {_key, values} ->
         length(values) > 10 and all_same_pattern?(values)
       end)
-    
+
     filtered_groups
     |> Enum.flat_map(fn {_key, values} -> values end)
     |> Enum.sort_by(& &1.url)
@@ -61,9 +62,11 @@ defmodule Barrage.ResponseAnalyzer do
       [first | rest] ->
         Enum.all?(rest, fn result ->
           result.status_code == first.status_code and
-          result.content_length == first.content_length
+            result.content_length == first.content_length
         end)
-      [] -> false
+
+      [] ->
+        false
     end
   end
 end

@@ -37,7 +37,7 @@ defmodule Barrage.CLI do
         ],
         quiet: [
           short: "-q",
-          long: "--quiet", 
+          long: "--quiet",
           help: "Suppress banner and errors",
           multiple: false
         ]
@@ -61,7 +61,7 @@ defmodule Barrage.CLI do
           default: 10
         ],
         extensions: [
-          value_name: "EXTENSIONS", 
+          value_name: "EXTENSIONS",
           short: "-x",
           long: "--extensions",
           help: "File extensions to search for (comma separated)",
@@ -98,7 +98,7 @@ defmodule Barrage.CLI do
 
   defp run(%{args: %{url: url}, options: options, flags: flags}) do
     print_banner(flags)
-    
+
     config = %{
       url: url,
       wordlist: options.wordlist,
@@ -115,16 +115,18 @@ defmodule Barrage.CLI do
   end
 
   defp print_banner(%{quiet: true}), do: :ok
+
   defp print_banner(_flags) do
-    IO.puts """
+    IO.puts("""
     =====================================================
     Barrage v0.1.0
     by Your Name
     =====================================================
-    """
+    """)
   end
 
   defp parse_extensions(""), do: []
+
   defp parse_extensions(ext_string) do
     ext_string
     |> String.split(",")

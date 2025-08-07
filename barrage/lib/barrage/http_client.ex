@@ -4,12 +4,12 @@ defmodule Barrage.HttpClient do
   """
 
   @type response :: %{
-    status_code: integer(),
-    headers: list(),
-    body: binary(),
-    url: String.t(),
-    content_length: integer()
-  }
+          status_code: integer(),
+          headers: list(),
+          body: binary(),
+          url: String.t(),
+          content_length: integer()
+        }
 
   @spec get(String.t(), map()) :: {:ok, response()} | {:error, term()}
   def get(url, config) do
@@ -19,7 +19,7 @@ defmodule Barrage.HttpClient do
     case HTTPoison.get(url, headers, options) do
       {:ok, %HTTPoison.Response{} = response} ->
         {:ok, format_response(response, url)}
-      
+
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, reason}
     end
@@ -42,7 +42,7 @@ defmodule Barrage.HttpClient do
 
   defp format_response(%HTTPoison.Response{} = response, url) do
     content_length = get_content_length(response.headers)
-    
+
     %{
       status_code: response.status_code,
       headers: response.headers,
@@ -54,16 +54,17 @@ defmodule Barrage.HttpClient do
 
   defp get_content_length(headers) do
     headers
-    |> Enum.find(fn {key, _value} -> 
-      String.downcase(key) == "content-length" 
+    |> Enum.find(fn {key, _value} ->
+      String.downcase(key) == "content-length"
     end)
     |> case do
-      {_key, value} -> 
+      {_key, value} ->
         case Integer.parse(value) do
           {length, _} -> length
           :error -> byte_size("")
         end
-      nil -> 
+
+      nil ->
         0
     end
   end

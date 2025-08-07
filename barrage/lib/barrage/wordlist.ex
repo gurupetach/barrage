@@ -7,15 +7,15 @@ defmodule Barrage.Wordlist do
   def load(wordlist_path) do
     case File.read(wordlist_path) do
       {:ok, content} ->
-        words = 
+        words =
           content
           |> String.split("\n")
           |> Enum.map(&String.trim/1)
           |> Enum.reject(&(&1 == ""))
           |> Enum.uniq()
-        
+
         {:ok, words}
-      
+
       {:error, reason} ->
         {:error, {:file_error, reason}}
     end
@@ -24,18 +24,18 @@ defmodule Barrage.Wordlist do
   @spec generate_paths(String.t(), list(String.t()), list(String.t())) :: list(String.t())
   def generate_paths(base_url, words, extensions) do
     base_url = normalize_url(base_url)
-    
-    paths = 
+
+    paths =
       for word <- words,
           ext <- ["" | extensions],
           do: build_url(base_url, word <> ext)
-    
+
     Enum.uniq(paths)
   end
 
   defp normalize_url(url) do
     url = String.trim_trailing(url, "/")
-    
+
     if String.starts_with?(url, "http://") or String.starts_with?(url, "https://") do
       url
     else
@@ -52,12 +52,13 @@ defmodule Barrage.Wordlist do
   def count_words(wordlist_path) do
     try do
       stream = File.stream!(wordlist_path)
-      count = 
+
+      count =
         stream
         |> Stream.map(&String.trim/1)
         |> Stream.reject(&(&1 == ""))
         |> Enum.count()
-      
+
       {:ok, count}
     rescue
       error -> {:error, error}

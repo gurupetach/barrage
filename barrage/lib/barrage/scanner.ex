@@ -8,13 +8,12 @@ defmodule Barrage.Scanner do
   def run(config) do
     with {:ok, words} <- Wordlist.load(config.wordlist),
          :ok <- validate_target(config.url) do
-      
       paths = Wordlist.generate_paths(config.url, words, config.extensions)
       total_requests = length(paths)
-      
+
       print_scan_info(config, total_requests)
-      
-      scan_results = 
+
+      scan_results =
         paths
         |> Task.async_stream(
           &scan_path(&1, config),
@@ -25,61 +24,68 @@ defmodule Barrage.Scanner do
         |> Stream.map(&handle_task_result/1)
         |> Stream.reject(&is_nil/1)
         |> Enum.to_list()
+
       OutputFormatter.print_summary(scan_results, config)
-      
+
       :ok
     else
       {:error, {:file_error, :enoent}} ->
-        IO.puts :stderr, "Error: Wordlist file '#{config.wordlist}' not found."
-        IO.puts :stderr, "Please provide a valid wordlist file with -w option."
+        IO.puts(:stderr, "Error: Wordlist file '#{config.wordlist}' not found.")
+        IO.puts(:stderr, "Please provide a valid wordlist file with -w option.")
         System.halt(1)
-      
+
       {:error, reason} ->
-        IO.puts :stderr, "Error: #{inspect(reason)}"
+        IO.puts(:stderr, "Error: #{inspect(reason)}")
         System.halt(1)
     end
   end
 
   defp validate_target(url) do
     case HttpClient.get(url, %{user_agent: "Barrage/0.1.0", timeout: 10000}) do
-      {:ok, _response} -> :ok
-      {:error, :timeout} -> :ok  # Allow timeout on initial check
-      {:error, reason} -> 
+      {:ok, _response} ->
+        :ok
+
+      # Allow timeout on initial check
+      {:error, :timeout} ->
+        :ok
+
+      {:error, reason} ->
         {:error, "Failed to connect to target: #{inspect(reason)}"}
     end
   end
 
   defp print_scan_info(config, total_requests) do
     unless config.quiet do
-      IO.puts "Target:     #{config.url}"
-      IO.puts "Wordlist:   #{config.wordlist}"
-      IO.puts "Threads:    #{config.threads}"
-      IO.puts "Extensions: #{Enum.join(config.extensions, ", ")}"
-      IO.puts "Requests:   #{total_requests}"
-      IO.puts "Status codes: #{config.status_codes |> MapSet.to_list() |> Enum.join(", ")}"
-      IO.puts ""
-      IO.puts "Starting scan..."
-      IO.puts ""
+      IO.puts("Target:     #{config.url}")
+      IO.puts("Wordlist:   #{config.wordlist}")
+      IO.puts("Threads:    #{config.threads}")
+      IO.puts("Extensions: #{Enum.join(config.extensions, ", ")}")
+      IO.puts("Requests:   #{total_requests}")
+      IO.puts("Status codes: #{config.status_codes |> MapSet.to_list() |> Enum.join(", ")}")
+      IO.puts("")
+      IO.puts("Starting scan...")
+      IO.puts("")
     end
   end
 
   defp scan_path(url, config) do
-    result = case HttpClient.get(url, config) do
-      {:ok, response} ->
-        ResponseAnalyzer.analyze(response, config)
-      
-      {:error, reason} ->
-        if config.verbose do
-          %{url: url, status: :error, reason: reason}
-        else
-          nil
-        end
-    end
-    
+    result =
+      case HttpClient.get(url, config) do
+        {:ok, response} ->
+          ResponseAnalyzer.analyze(response, config)
+
+        {:error, reason} ->
+          if config.verbose do
+            %{url: url, status: :error, reason: reason}
+          else
+            nil
+          end
+      end
+
     if result && should_display?(result, config) do
       OutputFormatter.format_result(result, config)
     end
-    
+
     result
   end
 
