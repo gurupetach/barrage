@@ -50,7 +50,7 @@ defmodule Barrage.OutputFormatter do
     :ok
   end
 
-  defp get_status_color(code) do
+  def get_status_color(code) do
     case code do
       # Green
       200 -> "\e[32m"
@@ -75,7 +75,7 @@ defmodule Barrage.OutputFormatter do
     end
   end
 
-  defp format_size(bytes) when is_integer(bytes) do
+  def format_size(bytes) when is_integer(bytes) do
     cond do
       bytes >= 1024 * 1024 ->
         "#{Float.round(bytes / (1024 * 1024), 2)}MB"
@@ -89,5 +89,5 @@ defmodule Barrage.OutputFormatter do
     |> String.pad_leading(8)
   end
 
-  defp format_size(_), do: "     -  "
+  def format_size(_), do: "     -  "
 end

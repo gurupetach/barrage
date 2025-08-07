@@ -2,7 +2,9 @@ defmodule BarrageTest do
   use ExUnit.Case
   doctest Barrage
 
-  test "greets the world" do
-    assert Barrage.hello() == :world
+  describe "Barrage module" do
+    test "hello/0 returns :world" do
+      assert Barrage.hello() == :world
+    end
   end
 end

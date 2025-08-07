@@ -25,13 +25,13 @@ defmodule Barrage.HttpClient do
     end
   end
 
-  defp build_headers(config) do
+  def build_headers(config) do
     [
       {"User-Agent", config.user_agent}
     ]
   end
 
-  defp build_options(config) do
+  def build_options(config) do
     [
       timeout: config.timeout,
       recv_timeout: config.timeout,
@@ -40,7 +40,7 @@ defmodule Barrage.HttpClient do
     ]
   end
 
-  defp format_response(%HTTPoison.Response{} = response, url) do
+  def format_response(%HTTPoison.Response{} = response, url) do
     content_length = get_content_length(response.headers)
 
     %{
@@ -52,7 +52,7 @@ defmodule Barrage.HttpClient do
     }
   end
 
-  defp get_content_length(headers) do
+  def get_content_length(headers) do
     headers
     |> Enum.find(fn {key, _value} ->
       String.downcase(key) == "content-length"

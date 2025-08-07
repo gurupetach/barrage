@@ -114,9 +114,9 @@ defmodule Barrage.CLI do
     Scanner.run(config)
   end
 
-  defp print_banner(%{quiet: true}), do: :ok
+  def print_banner(%{quiet: true}), do: :ok
 
-  defp print_banner(_flags) do
+  def print_banner(_flags) do
     IO.puts("""
     =====================================================
     Barrage v0.1.0
@@ -125,19 +125,19 @@ defmodule Barrage.CLI do
     """)
   end
 
-  defp parse_extensions(""), do: []
+  def parse_extensions(""), do: []
 
-  defp parse_extensions(ext_string) do
+  def parse_extensions(ext_string) do
     ext_string
     |> String.split(",")
     |> Enum.map(&String.trim/1)
     |> Enum.map(&ensure_dot_prefix/1)
   end
 
-  defp ensure_dot_prefix("." <> _ = ext), do: ext
-  defp ensure_dot_prefix(ext), do: "." <> ext
+  def ensure_dot_prefix("." <> _ = ext), do: ext
+  def ensure_dot_prefix(ext), do: "." <> ext
 
-  defp parse_status_codes(codes_string) do
+  def parse_status_codes(codes_string) do
     codes_string
     |> String.split(",")
     |> Enum.map(&String.trim/1)
