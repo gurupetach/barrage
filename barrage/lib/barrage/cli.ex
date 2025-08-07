@@ -79,9 +79,9 @@ defmodule Barrage.CLI do
         timeout: [
           value_name: "TIMEOUT",
           long: "--timeout",
-          help: "HTTP timeout in seconds",
+          help: "HTTP timeout in seconds (default: 5 for faster scanning)",
           parser: :integer,
-          default: 10
+          default: 5
         ],
         user_agent: [
           value_name: "USER_AGENT",
