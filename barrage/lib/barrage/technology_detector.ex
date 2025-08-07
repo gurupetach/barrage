@@ -127,47 +127,51 @@ defmodule Barrage.TechnologyDetector do
 
   defp check_framework_headers(acc, headers) do
     acc
-    |> maybe_add_tech(Map.has_key?(headers, "x-powered-by"), fn ->
-      case Map.get(headers, "x-powered-by") do
-        powered_by when is_binary(powered_by) ->
-          cond do
-            String.contains?(powered_by, "php") -> [:php_laravel]
-            String.contains?(powered_by, "express") -> [:nodejs_express]
-            String.contains?(powered_by, "next") -> [:react_next]
-            String.contains?(powered_by, "nuxt") -> [:vue_nuxt]
-            String.contains?(powered_by, "spring") -> [:java_spring]
-            String.contains?(powered_by, "rails") -> [:ruby_rails]
-            String.contains?(powered_by, "asp.net") -> [:dotnet_core]
-            String.contains?(powered_by, "drupal") -> [:cms_drupal]
-            String.contains?(powered_by, "joomla") -> [:cms_joomla]
-            String.contains?(powered_by, "shopify") -> [:ecommerce_platforms]
-            String.contains?(powered_by, "magento") -> [:ecommerce_platforms]
-            true -> []
-          end
+    |> check_powered_by_header(headers)
+    |> check_generator_header(headers)
+  end
 
-        _ ->
-          []
-      end
-    end)
-    |> maybe_add_tech(Map.has_key?(headers, "x-generator"), fn ->
-      case Map.get(headers, "x-generator") do
-        generator when is_binary(generator) ->
-          cond do
-            String.contains?(generator, "wordpress") -> [:wordpress]
-            String.contains?(generator, "django") -> [:django_python]
-            String.contains?(generator, "next") -> [:react_next]
-            String.contains?(generator, "nuxt") -> [:vue_nuxt]
-            String.contains?(generator, "drupal") -> [:cms_drupal]
-            String.contains?(generator, "joomla") -> [:cms_joomla]
-            String.contains?(generator, "magento") -> [:ecommerce_platforms]
-            String.contains?(generator, "shopify") -> [:ecommerce_platforms]
-            true -> []
-          end
+  defp check_powered_by_header(acc, headers) do
+    case Map.get(headers, "x-powered-by") do
+      powered_by when is_binary(powered_by) ->
+        cond do
+          String.contains?(powered_by, "php") -> [:php_laravel | acc]
+          String.contains?(powered_by, "express") -> [:nodejs_express | acc]
+          String.contains?(powered_by, "next") -> [:react_next | acc]
+          String.contains?(powered_by, "nuxt") -> [:vue_nuxt | acc]
+          String.contains?(powered_by, "spring") -> [:java_spring | acc]
+          String.contains?(powered_by, "rails") -> [:ruby_rails | acc]
+          String.contains?(powered_by, "asp.net") -> [:dotnet_core | acc]
+          String.contains?(powered_by, "drupal") -> [:cms_drupal | acc]
+          String.contains?(powered_by, "joomla") -> [:cms_joomla | acc]
+          String.contains?(powered_by, "shopify") -> [:ecommerce_platforms | acc]
+          String.contains?(powered_by, "magento") -> [:ecommerce_platforms | acc]
+          true -> acc
+        end
 
-        _ ->
-          []
-      end
-    end)
+      _ ->
+        acc
+    end
+  end
+
+  defp check_generator_header(acc, headers) do
+    case Map.get(headers, "x-generator") do
+      generator when is_binary(generator) ->
+        cond do
+          String.contains?(generator, "wordpress") -> [:wordpress | acc]
+          String.contains?(generator, "django") -> [:django_python | acc]
+          String.contains?(generator, "next") -> [:react_next | acc]
+          String.contains?(generator, "nuxt") -> [:vue_nuxt | acc]
+          String.contains?(generator, "drupal") -> [:cms_drupal | acc]
+          String.contains?(generator, "joomla") -> [:cms_joomla | acc]
+          String.contains?(generator, "magento") -> [:ecommerce_platforms | acc]
+          String.contains?(generator, "shopify") -> [:ecommerce_platforms | acc]
+          true -> acc
+        end
+
+      _ ->
+        acc
+    end
   end
 
   defp check_technology_headers(acc, headers) do
@@ -423,10 +427,6 @@ defmodule Barrage.TechnologyDetector do
   defp maybe_add_tech(acc, true, new_techs) when is_list(new_techs), do: new_techs ++ acc
   defp maybe_add_tech(acc, true, new_tech), do: [new_tech | acc]
   defp maybe_add_tech(acc, false, _), do: acc
-
-  defp maybe_add_tech(acc, condition, func) when is_function(func) do
-    if condition, do: func.() ++ acc, else: acc
-  end
 
   @spec get_wordlist_for_technology(technology()) :: String.t()
   def get_wordlist_for_technology(technology) do
