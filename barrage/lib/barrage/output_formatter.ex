@@ -134,6 +134,8 @@ defmodule Barrage.OutputFormatter do
       if length(Map.get(result, :security_findings, [])) > 0 do
         findings_str =
           result.security_findings
+          # Remove duplicates
+          |> Enum.uniq()
           # Limit to first 3 findings
           |> Enum.take(3)
           |> Enum.map(&format_security_finding/1)

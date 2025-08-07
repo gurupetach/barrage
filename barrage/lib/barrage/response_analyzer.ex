@@ -181,9 +181,9 @@ defmodule Barrage.ResponseAnalyzer do
     |> maybe_add_finding(String.contains?(url_lower, ".old"), :backup_file_exposure)
     |> maybe_add_finding(String.contains?(url_lower, ".tmp"), :temp_file_exposure)
     |> maybe_add_finding(String.contains?(url_lower, "config"), :config_file_exposure)
-    |> maybe_add_finding(not Map.has_key?(headers, "x-frame-options"), :missing_security_headers)
     |> maybe_add_finding(
-      not Map.has_key?(headers, "x-content-type-options"),
+      not Map.has_key?(headers, "x-frame-options") or
+        not Map.has_key?(headers, "x-content-type-options"),
       :missing_security_headers
     )
     |> maybe_add_finding(
