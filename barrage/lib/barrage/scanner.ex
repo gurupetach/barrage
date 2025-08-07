@@ -29,6 +29,11 @@ defmodule Barrage.Scanner do
       
       :ok
     else
+      {:error, {:file_error, :enoent}} ->
+        IO.puts :stderr, "Error: Wordlist file '#{config.wordlist}' not found."
+        IO.puts :stderr, "Please provide a valid wordlist file with -w option."
+        System.halt(1)
+      
       {:error, reason} ->
         IO.puts :stderr, "Error: #{inspect(reason)}"
         System.halt(1)

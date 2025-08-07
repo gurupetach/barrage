@@ -50,7 +50,7 @@ defmodule Barrage.CLI do
           help: "Path to wordlist file",
           parser: :string,
           required: false,
-          default: "/usr/share/wordlists/dirb/common.txt"
+          default: "wordlists/common.txt"
         ],
         threads: [
           value_name: "THREADS",
