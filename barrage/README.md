@@ -1,16 +1,26 @@
 # Barrage
 
-A fast, concurrent directory and file enumeration tool written in Elixir. Barrage leverages Elixir's lightweight processes and fault-tolerance to perform efficient web content discovery through brute-force techniques.
+An intelligent, high-performance directory and file enumeration tool written in Elixir. Barrage combines Elixir's legendary concurrency with smart technology detection and comprehensive security analysis to deliver professional-grade web content discovery.
 
-## Features
+## ✨ Key Features
 
-- **High Concurrency**: Leverages Elixir's actor model for thousands of concurrent requests
-- **Fault Tolerance**: Failed requests don't crash the scan
-- **Flexible Wordlists**: Support for custom wordlist files
-- **File Extension Fuzzing**: Automatically test multiple file extensions
-- **Status Code Filtering**: Focus on interesting HTTP responses
-- **Color-coded Output**: Easy-to-read results with status code highlighting
-- **Progress Tracking**: Real-time scan progress and statistics
+### 🧠 **Intelligent Scanning**
+- **Automatic Technology Detection**: Identifies frameworks (Phoenix, Laravel, WordPress, Django, React, Vue, Node.js)
+- **Smart Wordlist Selection**: Dynamically loads technology-specific wordlists based on detection
+- **Security Vulnerability Detection**: Finds exposed configs, backups, errors, and sensitive files
+- **File Type Recognition**: Automatically categorizes discovered content
+
+### ⚡ **High Performance**
+- **Massive Concurrency**: Leverages Elixir's actor model for thousands of concurrent requests
+- **Fault Tolerance**: Failed requests don't crash the scan thanks to OTP supervision
+- **Memory Efficient**: Lightweight processes consume minimal resources
+- **Configurable Threading**: Tune concurrency based on target capacity
+
+### 🎯 **Smart Output**
+- **Technology Tags**: `[Phoenix]` `[WordPress]` `[Laravel]` for discovered frameworks
+- **Security Warnings**: `⚠ SQL Error` `⚠ Git Exposed` `⚠ ENV File` for vulnerabilities  
+- **File Type Labels**: `[PHP]` `[JS]` `[JSON]` `[CFG]` for content classification
+- **Color-coded Results**: Status codes, technologies, and warnings with distinct colors
 
 ## Installation & Building
 
@@ -40,36 +50,52 @@ mix escript.build
 ### Basic Usage
 
 ```bash
-# Basic directory enumeration
-./barrage http://example.com
+# Intelligent scan with automatic technology detection (default)
+./barrage https://example.com
 
-# Scan with custom wordlist
-./barrage -w /path/to/wordlist.txt http://example.com
+# Manual wordlist with high concurrency
+./barrage -w /path/to/wordlist.txt -t 50 https://example.com
 
-# High-speed scan with more threads
-./barrage -t 50 http://example.com
+# Target specific file types
+./barrage -x php,html,js,json https://example.com
 ```
 
-### Advanced Examples
+### 🧠 **Intelligent Scanning Examples**
 
 ```bash
-# Scan for PHP and HTML files
-./barrage -x php,html,txt http://example.com
+# Auto-detect and scan WordPress site
+./barrage https://wordpress-site.com
+# Output: Detected technologies: WordPress
+# Uses wordpress.txt wordlist automatically + common.txt
 
-# Verbose output showing all requests
-./barrage -v http://example.com
+# Auto-detect and scan Laravel application  
+./barrage https://laravel-app.com
+# Output: Detected technologies: PHP/Laravel  
+# Uses php-laravel.txt wordlist + common.txt
 
-# Quiet mode (no banner or progress)
-./barrage -q http://example.com
+# Auto-detect Phoenix/Elixir application
+./barrage https://phoenix-app.com  
+# Output: Detected technologies: Elixir/Phoenix
+# Uses elixir-phoenix.txt wordlist + common.txt
 
-# Custom status codes to display
-./barrage -s 200,301,302,403 http://example.com
+# Disable intelligent mode for faster basic scan
+./barrage --intelligent false https://example.com
+```
 
-# Custom timeout and User-Agent
-./barrage --timeout 15 -a "MyScanner/1.0" http://example.com
+### 🚀 **Advanced Examples**
 
-# Comprehensive scan
-./barrage -w wordlists/big.txt -t 30 -x php,html,txt,js,css -v http://example.com
+```bash
+# Comprehensive security scan with verbose output
+./barrage -v -t 30 -x php,html,txt,js,css,json,xml https://target.com
+
+# Quiet mode for scripting (no banner, errors only)
+./barrage -q -s 200,403 https://example.com
+
+# Custom timeout and User-Agent for evasion
+./barrage --timeout 15 -a "Mozilla/5.0 (Windows NT 10.0)" https://example.com
+
+# Recursive directory scanning (experimental)
+./barrage -r --max-depth 2 -t 20 https://example.com
 ```
 
 ### Command Line Options
@@ -94,71 +120,166 @@ OPTIONS:
     -s, --status-codes   HTTP status codes to display (default: 200,204,301,302,307,401,403)
     --timeout            HTTP timeout in seconds (default: 10)
     -a, --user-agent     Custom User-Agent string (default: Barrage/0.1.0)
+    --intelligent        Enable intelligent scanning with technology detection (default: true)
+    -r, --recursive      Enable recursive directory scanning (default: false)
+    --max-depth          Maximum recursion depth for recursive scanning (default: 3)
 ```
 
-## Sample Output
+## 📊 **Sample Output**
 
+### Basic Scan
 ```
 =====================================================
 Barrage v0.1.0
-by Your Name
+by Peter Achieng
 =====================================================
 
+Detected technologies: WordPress, PHP/Laravel
 Target:     https://example.com/
-Wordlist:   wordlists/common.txt
+Wordlist:   wordlists/common.txt + wordpress.txt + php-laravel.txt  
 Threads:    10
-Extensions: php, html
-Requests:   72
+Extensions: 
+Requests:   156
 Status codes: 200, 301, 302, 403
 
 Starting scan...
 
-200         1.2KB    https://example.com/admin/
-301          312B    https://example.com/images/
-403          4.5KB    https://example.com/config/
-200         15KB     https://example.com/login.php
+200      1.2KB    https://example.com/wp-admin/       [PHP] [WordPress] ⚠ Missing Headers
+301       312B    https://example.com/wp-content/     [WordPress] 
+403      4.5KB    https://example.com/.env            [CFG] ⚠ ENV File, Password
+200     15.3KB    https://example.com/config.php      [PHP] [Laravel] ⚠ Config File
+200      2.1KB    https://example.com/api/graphql     [JSON] [Laravel] 
+500       845B    https://example.com/debug.php       [PHP] ⚠ PHP Error, Exception
 
 ===============================================================
 SCAN COMPLETE
 ===============================================================
-Total requests: 72
-Status 200: 2 responses
-Status 301: 1 responses
+Total requests: 156
+Status 200: 4 responses
+Status 301: 1 responses  
 Status 403: 1 responses
-Status 404: 68 responses
+Status 500: 1 responses
+Status 404: 149 responses
 ===============================================================
 ```
 
-## Creating Custom Wordlists
+### Security-Focused Output
+```bash
+./barrage -v https://vulnerable-site.com
 
+# Example findings:
+200      1.5KB    /backup.sql                [DB] ⚠ Backup File, SQL Error
+403       2KB     /.git/config              [CFG] ⚠ Git Exposed
+200      850B     /phpinfo.php              [PHP] ⚠ PHP Error, Debug Info  
+200      1.2KB    /.env                     [CFG] ⚠ ENV File, Secret, API Key
+```
+
+## 📁 **Technology-Specific Wordlists**
+
+Barrage includes specialized wordlists for different technologies:
+
+### **Built-in Wordlists**
+- `elixir-phoenix.txt` - Phoenix LiveView, channels, OTP endpoints
+- `wordpress.txt` - WP admin, plugins, themes, REST API  
+- `php-laravel.txt` - Artisan, Eloquent, Blade, config files
+- `django-python.txt` - Admin panel, migrations, static files
+- `react-next.txt` - Next.js routing, API routes, SSG paths
+- `vue-nuxt.txt` - Nuxt components, SSR, middleware
+- `nodejs-express.txt` - NPM files, Express routes, middleware
+
+### **Custom Wordlists**
 Create text files with one word per line:
-
 ```
 admin
-api
+api/v1  
+api/v2
+.env
 backup
 config
 dashboard
-login
-panel
-upload
 ```
 
-## Performance Tips
+## 🚀 **Performance & Security Tips**
 
-- **Start with fewer threads** (10-20) and increase based on target response
-- **Use specific wordlists** for better results (admin panels, API endpoints, etc.)
-- **Monitor target server** to avoid overwhelming it
-- **Combine extensions** strategically based on target technology
+### **Performance Optimization**
+- **Start conservatively** (10-20 threads) and scale based on target response
+- **Use intelligent scanning** to focus on relevant paths for detected technologies
+- **Monitor target health** to avoid overwhelming servers
+- **Combine strategic extensions** based on technology detection
 
-## Why Elixir?
+### **Security Best Practices**  
+- **Respect robots.txt** and rate limits during authorized testing
+- **Use custom User-Agents** to avoid basic detection
+- **Enable verbose mode** to capture maximum security findings
+- **Analyze security warnings** for configuration issues and exposures
 
-Barrage leverages Elixir's unique advantages for security tooling:
+## 🏗️ **Why Elixir for Security Tools?**
 
-- **Massive Concurrency**: Handle thousands of HTTP requests simultaneously
-- **Fault Tolerance**: Individual request failures don't affect the overall scan
-- **Memory Efficiency**: Lightweight processes consume minimal resources
-- **Built-in Supervision**: Automatic error recovery and process management
+Barrage leverages Elixir's unique advantages for professional security tooling:
+
+### **Concurrency & Performance**
+- **Actor Model**: Handle 100k+ concurrent HTTP requests efficiently  
+- **Lightweight Processes**: Each request runs in isolated 2KB process
+- **No Thread Limits**: Scale beyond traditional threading constraints
+
+### **Reliability & Fault Tolerance**
+- **OTP Supervision**: Individual request failures don't crash scans
+- **Built-in Recovery**: Automatic restart of failed processes
+- **Memory Safety**: No buffer overflows or memory leaks
+
+### **Production Ready**
+- **Battle Tested**: Powers high-traffic systems like Discord, Pinterest  
+- **Hot Code Swapping**: Update scanning logic without stopping
+- **Distributed Computing**: Scale across multiple machines seamlessly
+
+## 🧪 **Testing & Quality**
+
+Barrage includes comprehensive test coverage for reliability:
+
+```bash
+# Run all tests
+mix test
+
+# Run with coverage report  
+mix test --cover
+
+# Test specific modules
+mix test test/barrage/technology_detector_test.exs
+```
+
+### **Test Coverage**
+- **71 comprehensive tests** covering all major functionality
+- **Technology detection tests** for framework identification
+- **Security analysis tests** for vulnerability detection  
+- **Output formatting tests** for intelligent display
+- **HTTP client tests** for reliable networking
+- **Wordlist processing tests** for file handling
+
+## 📦 **Binary Distribution**
+
+### **For End Users (No Elixir Required)**
+Download the pre-built binary and run directly:
+
+```bash
+# Download from releases
+curl -L -o barrage https://github.com/your-repo/releases/latest/download/barrage
+chmod +x barrage
+
+# Run immediately  
+./barrage https://example.com
+```
+
+### **For Developers**
+Build from source for development and customization:
+
+```bash
+git clone <repository-url>
+cd barrage
+mix deps.get
+mix compile
+mix escript.build
+./barrage --help
+```
 
 ## Contributing
 
