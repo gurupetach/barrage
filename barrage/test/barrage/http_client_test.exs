@@ -100,15 +100,44 @@ defmodule Barrage.HttpClientTest do
   end
 
   describe "build_options/1" do
-    test "builds HTTP options from config" do
-      config = %{timeout: 5000}
+    test "builds HTTP options from config with timeout in seconds" do
+      # 5 seconds
+      config = %{timeout: 5}
 
       options = Barrage.HttpClient.build_options(config)
 
+      # Converted to milliseconds
       assert options[:timeout] == 5000
-      assert options[:recv_timeout] == 5000
+      # Capped at 3 seconds
+      assert options[:recv_timeout] == 3000
       assert options[:follow_redirect] == false
       assert options[:ssl][:verify] == :verify_none
+      assert options[:connect_timeout] == 2000
+      assert options[:max_body_length] == 1_048_576
+    end
+
+    test "caps receive timeout at 3 seconds" do
+      # 10 seconds
+      config = %{timeout: 10}
+
+      options = Barrage.HttpClient.build_options(config)
+
+      # 10 seconds in milliseconds
+      assert options[:timeout] == 10000
+      # Still capped at 3 seconds
+      assert options[:recv_timeout] == 3000
+    end
+
+    test "uses timeout value when smaller than 3 seconds" do
+      # 2 seconds
+      config = %{timeout: 2}
+
+      options = Barrage.HttpClient.build_options(config)
+
+      # 2 seconds in milliseconds
+      assert options[:timeout] == 2000
+      # Uses the smaller timeout value
+      assert options[:recv_timeout] == 2000
     end
   end
 end
