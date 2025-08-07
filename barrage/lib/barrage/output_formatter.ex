@@ -59,9 +59,22 @@ defmodule Barrage.OutputFormatter do
       end)
 
       IO.puts("===============================================================")
+      print_legal_footer()
     end
 
     :ok
+  end
+
+  defp print_legal_footer do
+    IO.puts("")
+    IO.puts("⚖️  LEGAL DISCLAIMER:")
+    IO.puts("Results above are for authorized security testing only.")
+    IO.puts("Unauthorized use of this information may violate laws.")
+    IO.puts("Users are solely responsible for legal compliance.")
+    IO.puts("")
+    IO.puts("📄 License: See LICENSE file for usage restrictions")
+    IO.puts("🔒 Report security issues responsibly")
+    IO.puts("===============================================================")
   end
 
   def get_status_color(code) do

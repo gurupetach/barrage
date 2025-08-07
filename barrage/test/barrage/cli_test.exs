@@ -52,7 +52,9 @@ defmodule Barrage.CLITest do
         end)
 
       assert output =~ "Barrage v0.1.0"
-      assert output =~ "Peter Achieng"
+      assert output =~ "Security Research Tool"
+      assert output =~ "LEGAL WARNING"
+      assert output =~ "Educational Use Only"
     end
 
     test "does not print banner when quiet" do

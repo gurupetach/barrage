@@ -119,6 +119,11 @@ defmodule Barrage.CLI do
   defp run(%{args: %{url: url}, options: options, flags: flags}) do
     print_banner(flags)
 
+    # Legal consent check
+    unless flags.quiet do
+      require_consent(url)
+    end
+
     config = %{
       url: url,
       wordlist: options.wordlist,
@@ -137,13 +142,48 @@ defmodule Barrage.CLI do
     Scanner.run(config)
   end
 
+  defp require_consent(url) do
+    IO.puts("📋 CONSENT VERIFICATION:")
+    IO.puts("You are about to scan: #{url}")
+    IO.puts("")
+    IO.puts("Do you confirm that you:")
+    IO.puts("• Own this system, OR")
+    IO.puts("• Have explicit written authorization to test this system, OR")
+    IO.puts("• Are conducting authorized security research?")
+    IO.puts("")
+
+    consent =
+      IO.gets("Type 'I AGREE' to proceed, or anything else to exit: ")
+      |> String.trim()
+
+    unless String.upcase(consent) == "I AGREE" do
+      IO.puts("")
+      IO.puts("❌ Scanning cancelled - No consent provided")
+      IO.puts("Exiting to prevent unauthorized use...")
+      System.halt(0)
+    end
+
+    IO.puts("")
+    IO.puts("✅ Consent recorded - Proceeding with authorized scan...")
+    IO.puts("")
+  end
+
   def print_banner(%{quiet: true}), do: :ok
 
   def print_banner(_flags) do
     IO.puts("""
     =====================================================
-    Barrage v0.1.0
-    by Peter Achieng
+    Barrage v0.1.0 - Security Research Tool
+    Open Source Project - Educational Use Only
+    =====================================================
+
+    ⚠️  LEGAL WARNING:
+    • Use ONLY on systems you own or have explicit written permission to test
+    • Unauthorized scanning may violate local, state, and international laws
+    • Users assume ALL legal responsibility for their actions
+    • This tool is for authorized security testing and research ONLY
+    • Misuse may result in criminal prosecution and civil liability
+
     =====================================================
     """)
   end

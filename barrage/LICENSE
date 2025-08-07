@@ -1,0 +1,80 @@
+BARRAGE SECURITY RESEARCH TOOL LICENSE
+======================================
+
+Copyright (c) 2025 Open Source Security Research Community
+
+EDUCATIONAL AND AUTHORIZED TESTING LICENSE
+
+This software is provided for EDUCATIONAL, SECURITY RESEARCH, and AUTHORIZED 
+PENETRATION TESTING purposes only. By using, copying, modifying, or distributing 
+this software, you agree to the following terms:
+
+PERMITTED USES:
+- Security research and vulnerability assessment on systems you own
+- Authorized penetration testing with explicit written permission
+- Educational purposes in academic or training environments
+- Security hardening and defensive security measures
+- Open source security tool development and improvement
+
+PROHIBITED USES:
+- Scanning, testing, or attacking systems without explicit authorization
+- Any unauthorized network reconnaissance or vulnerability scanning
+- Malicious activities including but not limited to:
+  * Data theft or unauthorized access
+  * Denial of service attacks
+  * System compromise or exploitation
+  * Corporate espionage or competitive intelligence gathering
+- Commercial use without proper licensing agreements
+- Distribution to parties who may use it for unauthorized purposes
+
+LEGAL REQUIREMENTS:
+1. Users MUST obtain explicit written permission before scanning any system
+2. Users MUST comply with all applicable local, state, and international laws
+3. Users MUST use this tool only for legitimate security research purposes
+4. Users MUST implement responsible disclosure for any vulnerabilities found
+5. Users MUST NOT use this tool to violate privacy or security of others
+
+LIABILITY AND RESPONSIBILITY:
+- Users assume ALL legal responsibility for their use of this software
+- The authors and contributors are NOT liable for any misuse of this tool
+- Users agree to indemnify authors against any claims arising from misuse
+- This software is provided "AS IS" without any warranties
+
+COMPLIANCE OBLIGATIONS:
+- Computer Fraud and Abuse Act (CFAA) compliance required in the US
+- General Data Protection Regulation (GDPR) compliance in the EU
+- Local cybersecurity and privacy laws in all jurisdictions
+- Professional ethics standards for security professionals
+
+ATTRIBUTION:
+- Original attribution must be maintained in all copies
+- Modifications must be clearly documented
+- Commercial derivative works require explicit permission
+
+TERMINATION:
+This license automatically terminates if you violate any of its terms.
+
+DISCLAIMER:
+THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+REPORTING VIOLATIONS:
+Report license violations or security issues responsibly. Misuse of this
+tool may result in legal action and cooperation with law enforcement.
+
+By using this software, you acknowledge that you have read this license,
+understand it, and agree to be bound by its terms.
+
+CONTACT:
+For licensing inquiries or to report violations, please contact the 
+project maintainers through the official repository channels.
+
+Last Updated: 2025-08-07

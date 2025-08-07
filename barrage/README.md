@@ -2,6 +2,29 @@
 
 An intelligent, high-performance directory and file enumeration tool written in Elixir. Barrage combines Elixir's legendary concurrency with smart technology detection and comprehensive security analysis to deliver professional-grade web content discovery.
 
+## ⚖️ **LEGAL NOTICE - IMPORTANT**
+
+🚨 **This tool is for AUTHORIZED security testing and educational purposes ONLY.**
+
+**Before using Barrage, you MUST:**
+- Own the target system, OR
+- Have explicit written permission to test the target system, OR  
+- Be conducting authorized security research
+
+**Unauthorized scanning may violate:**
+- Computer Fraud and Abuse Act (CFAA) in the US
+- Similar cybersecurity laws in your jurisdiction
+- Terms of service of target systems
+- Privacy and data protection regulations
+
+**By using this tool, you agree to:**
+- Comply with all applicable laws and regulations
+- Accept full legal responsibility for your actions  
+- Use results only for legitimate security purposes
+- Implement responsible disclosure for vulnerabilities found
+
+**See [LICENSE](LICENSE) for complete usage restrictions and legal requirements.**
+
 ## ✨ Key Features
 
 ### 🧠 **Intelligent Scanning**
