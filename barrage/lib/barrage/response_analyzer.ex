@@ -95,14 +95,14 @@ defmodule Barrage.ResponseAnalyzer do
       String.contains?(url_lower, ".php") ->
         :php
 
+      String.contains?(url_lower, ".json") ->
+        :json
+
       String.contains?(url_lower, ".js") ->
         :javascript
 
       String.contains?(url_lower, ".css") ->
         :css
-
-      String.contains?(url_lower, ".json") ->
-        :json
 
       String.contains?(url_lower, ".xml") ->
         :xml

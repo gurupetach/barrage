@@ -22,6 +22,54 @@ defmodule Barrage.OutputFormatterTest do
       assert output =~ "1.0KB"
     end
 
+    test "formats response with intelligence enabled" do
+      result = %{
+        status_code: 200,
+        url: "http://example.com/config.php",
+        content_length: 1024,
+        file_type: :php,
+        technologies: [:php_laravel],
+        security_findings: [:config_file_exposure]
+      }
+
+      config = %{quiet: false, intelligent: true}
+
+      output =
+        capture_io(fn ->
+          Barrage.OutputFormatter.format_result(result, config)
+        end)
+
+      assert output =~ "200"
+      assert output =~ "http://example.com/config.php"
+      assert output =~ "[PHP]"
+      assert output =~ "[Laravel]"
+      assert output =~ "⚠ Config File"
+    end
+
+    test "formats response without intelligence" do
+      result = %{
+        status_code: 200,
+        url: "http://example.com/admin",
+        content_length: 1024,
+        file_type: :php,
+        technologies: [:php_laravel],
+        security_findings: [:config_file_exposure]
+      }
+
+      config = %{quiet: false, intelligent: false}
+
+      output =
+        capture_io(fn ->
+          Barrage.OutputFormatter.format_result(result, config)
+        end)
+
+      assert output =~ "200"
+      assert output =~ "http://example.com/admin"
+      refute output =~ "[PHP]"
+      refute output =~ "[Laravel]"
+      refute output =~ "⚠"
+    end
+
     test "formats redirect response" do
       result = %{
         status_code: 301,

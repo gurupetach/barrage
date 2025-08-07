@@ -19,6 +19,67 @@ defmodule Barrage.ResponseAnalyzerTest do
       # TODO: Add timing
       assert result.response_time == 0
       assert result.interesting == true
+      assert result.technologies == []
+      assert result.file_type == :unknown
+      # Security findings will include missing headers
+      assert is_list(result.security_findings)
+    end
+
+    test "analyzes response with intelligent mode enabled" do
+      response = %{
+        url: "http://example.com/config.php",
+        status_code: 200,
+        content_length: 1024,
+        headers: [{"Server", "Apache/2.4"}],
+        body: "<?php echo 'config file'; ?>"
+      }
+
+      result = Barrage.ResponseAnalyzer.analyze(response, %{intelligent: true})
+
+      assert result.file_type == :php
+      assert result.security_findings != []
+      assert :config_file_exposure in result.security_findings
+    end
+
+    test "detects security findings" do
+      response = %{
+        url: "http://example.com/.env",
+        status_code: 200,
+        content_length: 512,
+        headers: [],
+        body: "DB_PASSWORD=secret123"
+      }
+
+      result = Barrage.ResponseAnalyzer.analyze(response, %{})
+
+      assert :env_file_exposure in result.security_findings
+      assert :password_reference in result.security_findings
+      assert :secret_reference in result.security_findings
+    end
+
+    test "detects file types from URL" do
+      test_cases = [
+        {"http://example.com/script.js", :javascript},
+        {"http://example.com/style.css", :css},
+        {"http://example.com/data.json", :json},
+        {"http://example.com/backup.sql", :database},
+        {"http://example.com/app.log", :log}
+      ]
+
+      for {url, expected_type} <- test_cases do
+        response = %{
+          url: url,
+          status_code: 200,
+          content_length: 100,
+          headers: [],
+          body: ""
+        }
+
+        result = Barrage.ResponseAnalyzer.analyze(response, %{})
+
+        assert result.file_type == expected_type,
+               "Expected #{expected_type} for #{url}, got #{result.file_type}"
+      end
     end
 
     test "analyzes redirect response" do
