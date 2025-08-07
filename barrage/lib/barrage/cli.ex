@@ -120,7 +120,7 @@ defmodule Barrage.CLI do
     IO.puts("""
     =====================================================
     Barrage v0.1.0
-    by Your Name
+    by Peter Achieng
     =====================================================
     """)
   end
