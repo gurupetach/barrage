@@ -8,14 +8,16 @@ defmodule Barrage.MixProject do
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      escript: escript()
+      escript: escript(),
+      releases: releases()
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Barrage.Application, []}
     ]
   end
 
@@ -25,7 +27,8 @@ defmodule Barrage.MixProject do
       {:httpoison, "~> 2.0"},
       {:optimus, "~> 0.4"},
       {:progress_bar, "~> 3.0"},
-      {:jason, "~> 1.4"}
+      {:jason, "~> 1.4"},
+      {:burrito, "~> 1.0"}
     ]
   end
 
@@ -33,6 +36,19 @@ defmodule Barrage.MixProject do
     [
       main_module: Barrage.CLI,
       name: "barrage"
+    ]
+  end
+
+  defp releases do
+    [
+      barrage: [
+        steps: [:assemble, &Burrito.wrap/1],
+        burrito: [
+          targets: [
+            linux: [os: :linux, cpu: :x86_64]
+          ]
+        ]
+      ]
     ]
   end
 end

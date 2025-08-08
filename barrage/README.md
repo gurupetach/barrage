@@ -45,27 +45,66 @@ An intelligent, high-performance directory and file enumeration tool written in 
 - **File Type Labels**: `[PHP]` `[JS]` `[JSON]` `[CFG]` for content classification
 - **Color-coded Results**: Status codes, technologies, and warnings with distinct colors
 
-## Installation & Building
+## Installation & Usage
 
-1. Clone the repository:
+### 🚀 **Quick Start (Recommended)**
+
+For immediate use without any setup required:
+
 ```bash
-git clone <repository-url>
+# Download the standalone binary (no Elixir/Erlang required)
+curl -L -o barrage https://github.com/gurupetach/barrage/releases/latest/download/barrage
+chmod +x barrage
+
+# Run immediately
+./barrage https://example.com
+```
+
+### 🛠️ **Building from Source**
+
+#### **Option 1: Standalone Binary (Recommended for Distribution)**
+
+Build a self-contained executable that works on any Linux system without Elixir:
+
+```bash
+# Prerequisites: Install Zig for cross-platform builds
+sudo snap install zig --classic
+
+# Clone and build
+git clone https://github.com/gurupetach/barrage.git
 cd barrage
+./build.sh
+
+# Creates both versions:
+# - barrage (16MB standalone binary - no runtime required)
+# - barrage-escript (2MB escript - requires Elixir runtime)
 ```
 
-2. Install dependencies:
+#### **Option 2: Escript Only (For Developers)**
+
+If you have Elixir installed and want the lightweight version:
+
 ```bash
+git clone https://github.com/gurupetach/barrage.git
+cd barrage
 mix deps.get
-```
-
-3. Build the executable:
-```bash
 mix escript.build
+./barrage https://example.com
 ```
 
-4. Run the tool:
+### 🎯 **Build Options**
+
+The enhanced build script provides flexible options:
+
 ```bash
-./barrage <target-url>
+# Build both versions (default)
+./build.sh
+
+# Build only standalone binary (16MB, no dependencies)
+./build.sh --standalone-only
+
+# Build only escript (2MB, requires Elixir runtime)
+./build.sh --escript-only
 ```
 
 ## Usage
@@ -278,31 +317,58 @@ mix test test/barrage/technology_detector_test.exs
 - **HTTP client tests** for reliable networking
 - **Wordlist processing tests** for file handling
 
-## 📦 **Binary Distribution**
+## 📦 **Binary Distribution & Architecture**
 
-### **For End Users (No Elixir Required)**
-Download the pre-built binary and run directly:
+### **Two Distribution Options**
 
+Barrage offers two build variants to suit different deployment scenarios:
+
+#### **1. Standalone Binary (Recommended for End Users)**
+- **Size**: ~16MB
+- **Dependencies**: None - completely self-contained
+- **Runtime**: Embedded Erlang/Elixir runtime via Burrito
+- **Compatibility**: Any Linux x86_64 system
+- **Advantages**: 
+  - No installation requirements
+  - Works on systems without Elixir/Erlang
+  - Perfect for penetration testing distributions
+  - Statically linked for maximum compatibility
+
+#### **2. Escript Binary (For Developers)**
+- **Size**: ~2MB  
+- **Dependencies**: Requires Erlang/Elixir runtime installed
+- **Compatibility**: Systems with Elixir >= 1.14
+- **Advantages**:
+  - Smaller file size
+  - Faster startup time
+  - Easy to modify and rebuild
+
+### **Cross-Platform Support**
+
+While the current release focuses on Linux x86_64, Burrito supports building for:
+- ✅ **Linux** (x86_64) - Fully supported and tested
+- 🚧 **Windows** (x86_64) - Available but requires additional build setup
+- 🚧 **macOS** (x86_64, ARM64) - Available but requires additional build setup
+
+To build for other platforms, update `mix.exs` targets and run:
 ```bash
-# Download from releases
-curl -L -o barrage https://github.com/your-repo/releases/latest/download/barrage
-chmod +x barrage
+# Add targets to mix.exs
+targets: [
+  linux: [os: :linux, cpu: :x86_64],
+  windows: [os: :windows, cpu: :x86_64],
+  macos: [os: :darwin, cpu: :x86_64]
+]
 
-# Run immediately  
-./barrage https://example.com
+# Build all targets
+MIX_ENV=prod mix release
 ```
 
-### **For Developers**
-Build from source for development and customization:
+### **Technical Implementation**
 
-```bash
-git clone <repository-url>
-cd barrage
-mix deps.get
-mix compile
-mix escript.build
-./barrage --help
-```
+- **Burrito**: Used for creating self-contained executables with embedded ERTS
+- **Embedded Wordlists**: All wordlist files are compiled into the binary
+- **Static Linking**: No external library dependencies
+- **Zig Build System**: Provides cross-platform compilation capabilities
 
 ## Contributing
 
