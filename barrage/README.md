@@ -47,64 +47,74 @@ An intelligent, high-performance directory and file enumeration tool written in 
 
 ## Installation & Usage
 
-### 🚀 **Quick Start (Recommended)**
+### 🚀 **Quick Start**
 
-For immediate use without any setup required:
+#### **Option 1: Download Binary (Requires Elixir)**
 
 ```bash
-# Download the standalone binary (no Elixir/Erlang required)
+# Download the escript binary
 curl -L -o barrage https://github.com/gurupetach/barrage/releases/latest/download/barrage
 chmod +x barrage
 
-# Run immediately
+# Install Elixir if not already installed
+# Ubuntu/Debian:
+sudo apt install elixir
+# Or use official installer:
+# curl -fsSL https://install.elixir-lang.org | bash
+
+# Run the tool
 ./barrage https://example.com
+```
+
+#### **Option 2: Use with Docker (No Local Installation)**
+
+```bash
+# Run with Docker (self-contained)
+docker run --rm -it elixir:1.14 bash -c "
+  curl -L -o barrage https://github.com/gurupetach/barrage/releases/latest/download/barrage &&
+  chmod +x barrage &&
+  echo 'I AGREE' | ./barrage https://example.com
+"
 ```
 
 ### 🛠️ **Building from Source**
 
-#### **Option 1: Standalone Binary (Recommended for Distribution)**
+#### **Standard Build (Escript)**
 
-Build a self-contained executable that works on any Linux system without Elixir:
+```bash
+# Clone and build
+git clone https://github.com/gurupetach/barrage.git
+cd barrage
+mix deps.get
+MIX_ENV=prod mix escript.build
+./barrage https://example.com
+```
+
+#### **Experimental: Standalone Binary (In Development)**
+
+⚠️ **Note**: Standalone binary support is experimental and has known HTTP client issues.
 
 ```bash
 # Prerequisites: Install Zig for cross-platform builds
 sudo snap install zig --classic
 
-# Clone and build
+# Build standalone version (has HTTP issues currently)
 git clone https://github.com/gurupetach/barrage.git
 cd barrage
-./build.sh
-
-# Creates both versions:
-# - barrage (16MB standalone binary - no runtime required)
-# - barrage-escript (2MB escript - requires Elixir runtime)
+./build.sh --standalone-only
 ```
 
-#### **Option 2: Escript Only (For Developers)**
-
-If you have Elixir installed and want the lightweight version:
+### 🎯 **Build Script Options**
 
 ```bash
-git clone https://github.com/gurupetach/barrage.git
-cd barrage
-mix deps.get
-mix escript.build
-./barrage https://example.com
-```
+# Build escript (recommended and stable)
+./build.sh --escript-only
 
-### 🎯 **Build Options**
-
-The enhanced build script provides flexible options:
-
-```bash
-# Build both versions (default)
-./build.sh
-
-# Build only standalone binary (16MB, no dependencies)
+# Build standalone binary (experimental)
 ./build.sh --standalone-only
 
-# Build only escript (2MB, requires Elixir runtime)
-./build.sh --escript-only
+# Build both versions
+./build.sh
 ```
 
 ## Usage
@@ -323,52 +333,51 @@ mix test test/barrage/technology_detector_test.exs
 
 Barrage offers two build variants to suit different deployment scenarios:
 
-#### **1. Standalone Binary (Recommended for End Users)**
+#### **1. Escript Binary (Current Release)**
+- **Size**: ~2.4MB  
+- **Dependencies**: Requires Erlang/Elixir runtime installed
+- **Compatibility**: Systems with Elixir >= 1.14
+- **Status**: ✅ **Stable and fully functional**
+- **Advantages**:
+  - Reliable HTTP client handling
+  - Fast startup time
+  - Easy to modify and rebuild
+  - Battle-tested in production
+
+#### **2. Standalone Binary (Experimental)**
 - **Size**: ~16MB
 - **Dependencies**: None - completely self-contained
 - **Runtime**: Embedded Erlang/Elixir runtime via Burrito
-- **Compatibility**: Any Linux x86_64 system
-- **Advantages**: 
-  - No installation requirements
-  - Works on systems without Elixir/Erlang
-  - Perfect for penetration testing distributions
-  - Statically linked for maximum compatibility
-
-#### **2. Escript Binary (For Developers)**
-- **Size**: ~2MB  
-- **Dependencies**: Requires Erlang/Elixir runtime installed
-- **Compatibility**: Systems with Elixir >= 1.14
-- **Advantages**:
-  - Smaller file size
-  - Faster startup time
-  - Easy to modify and rebuild
+- **Status**: ⚠️ **In development - has HTTP client issues**
+- **Compatibility**: Any Linux x86_64 system (when working)
+- **Current Issues**:
+  - HTTP client race conditions with concurrent requests
+  - ETS table initialization problems
+  - Not recommended for production use yet
 
 ### **Cross-Platform Support**
 
-While the current release focuses on Linux x86_64, Burrito supports building for:
-- ✅ **Linux** (x86_64) - Fully supported and tested
-- 🚧 **Windows** (x86_64) - Available but requires additional build setup
-- 🚧 **macOS** (x86_64, ARM64) - Available but requires additional build setup
+**Current Status:**
+- ✅ **Linux** (x86_64) - Escript version fully supported and stable
+- 🚧 **Windows/macOS** - Experimental Burrito support (in development)
 
-To build for other platforms, update `mix.exs` targets and run:
-```bash
-# Add targets to mix.exs
-targets: [
-  linux: [os: :linux, cpu: :x86_64],
-  windows: [os: :windows, cpu: :x86_64],
-  macos: [os: :darwin, cpu: :x86_64]
-]
-
-# Build all targets
-MIX_ENV=prod mix release
-```
+**For immediate cross-platform use:**
+- Use Docker containers with the escript version
+- Install Elixir on target systems
+- Wait for standalone binary fixes to be completed
 
 ### **Technical Implementation**
 
-- **Burrito**: Used for creating self-contained executables with embedded ERTS
-- **Embedded Wordlists**: All wordlist files are compiled into the binary
-- **Static Linking**: No external library dependencies
-- **Zig Build System**: Provides cross-platform compilation capabilities
+**Current (Stable):**
+- **Escript**: Elixir script with embedded bytecode and wordlists
+- **HTTP Client**: HTTPoison with hackney backend
+- **Concurrency**: Elixir Task-based concurrent scanning
+
+**Experimental (In Development):**
+- **Burrito**: Self-contained executables with embedded ERTS
+- **Static Linking**: No external library dependencies  
+- **Zig Build System**: Cross-platform compilation capabilities
+- **Issue**: HTTP client initialization in standalone environment
 
 ## Contributing
 
