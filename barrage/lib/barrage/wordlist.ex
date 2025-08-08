@@ -5,20 +5,25 @@ defmodule Barrage.Wordlist do
 
   @spec load(String.t()) :: {:ok, list(String.t())} | {:error, term()}
   def load(wordlist_path) do
-    case File.read(wordlist_path) do
-      {:ok, content} ->
-        words =
-          content
-          |> String.split("\n")
-          |> Enum.map(&String.trim/1)
-          |> Enum.reject(&(&1 == ""))
-          |> Enum.uniq()
+    content =
+      case File.read(wordlist_path) do
+        {:ok, file_content} ->
+          file_content
 
-        {:ok, words}
+        {:error, _} ->
+          # Try to load from embedded wordlists
+          filename = Path.basename(wordlist_path)
+          Barrage.EmbeddedWordlists.get_wordlist(filename)
+      end
 
-      {:error, reason} ->
-        {:error, {:file_error, reason}}
-    end
+    words =
+      content
+      |> String.split("\n")
+      |> Enum.map(&String.trim/1)
+      |> Enum.reject(&(&1 == ""))
+      |> Enum.uniq()
+
+    {:ok, words}
   end
 
   @spec generate_paths(String.t(), list(String.t()), list(String.t())) :: list(String.t())
@@ -51,12 +56,22 @@ defmodule Barrage.Wordlist do
   @spec count_words(String.t()) :: {:ok, integer()} | {:error, term()}
   def count_words(wordlist_path) do
     try do
-      stream = File.stream!(wordlist_path)
+      content =
+        case File.read(wordlist_path) do
+          {:ok, file_content} ->
+            file_content
+
+          {:error, _} ->
+            # Try to load from embedded wordlists
+            filename = Path.basename(wordlist_path)
+            Barrage.EmbeddedWordlists.get_wordlist(filename)
+        end
 
       count =
-        stream
-        |> Stream.map(&String.trim/1)
-        |> Stream.reject(&(&1 == ""))
+        content
+        |> String.split("\n")
+        |> Enum.map(&String.trim/1)
+        |> Enum.reject(&(&1 == ""))
         |> Enum.count()
 
       {:ok, count}

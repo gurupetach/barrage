@@ -30,6 +30,10 @@ defmodule Barrage.MixProject do
   end
 
   defp escript do
-    [main_module: Barrage.CLI]
+    [
+      main_module: Barrage.CLI,
+      name: "barrage",
+      embed_elixir: true
+    ]
   end
 end
